@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import numpy as np
 import cv2
+import config
 
 
 
@@ -87,10 +88,14 @@ class GraphFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self.redraw_timer)        
         self.redraw_timer.Start(10)
         
-        port = "5556"
         context = zmq.Context()
-        self.socket = context.socket(zmq.PAIR)
-        self.socket.bind("tcp://*:%s" % port)
+        self.socket = context.socket(zmq.SUB)
+        self.socket.connect ("tcp://localhost:%s" % config.posport)
+        self.socket.connect ("tcp://localhost:%s" % config.sim_posport)
+        self.socket.setsockopt(zmq.SUBSCRIBE, str(config.topic_posdata))
+        self.socket.setsockopt(zmq.SUBSCRIBE, str(config.topic_simposdata))
+
+        #self.socket.bind("tcp://*:%s" % port)
         self.PrevT=np.array([0,0,0])
         self.cumT=np.array([0,0,0])
 
@@ -150,30 +155,14 @@ class GraphFrame(wx.Frame):
                     color=(1, 0, 0))
 
     def draw_plot(self):
-
-        # Using setp here is convenient, because get_xticklabels
-        # returns a list over which one needs to explicitly 
-        # iterate, and setp already handles this.
-        #  
-        #pylab.setp(self.axes.get_xticklabels(), 
-        #    visible=self.cb_xlab.IsChecked())
-        adata=np.array(self.data)      
-        
-        #self.plot_data_xyz.set_xdata(adata[-10:,0])
-        #self.plot_data_xyz.set_ydata(adata[-10:,1])
-        #import pdb;pdb.set_trace()
-        #self.plot_data_xyz.set_zdata(adata[-10:,1])
         self.axes_xyz.cla()
-        ##self.plot_data_xyz = self.axes_xyz.plot3D(
-        #            adata[-10:,0],adata[-10:,1],adata[-10:,2], 
-        #            linewidth=1,
-        #            color=(1, 0, 0),
-        #            )[0]
-        #self.plot_data_xyz = self.axes_xyz.scatter(
-        #            adata[-1:,0],adata[-1:,1],adata[-1:,2], 
-        #            color=(1, 0, 0),
-        #            )
-        self.drawL(adata[-1],p1_color=(1,0,0),p2_color=(0,1,0))
+
+        if len(self.data)>0:
+            adata=np.array(self.data)      
+            self.drawL(adata[-1],p1_color=(1,0,0),p2_color=(0,1,0))
+        if len(self.sim_data)>0:
+            adata=np.array(self.sim_data)   
+            self.drawL(adata[-1],p1_color=(1,0,0),p2_color=(0,1,0),line_color=(0,1,1))
                   
           
         self.axes_xyz.set_xbound(lower=-5, upper=5)
@@ -189,13 +178,16 @@ class GraphFrame(wx.Frame):
         #
         if len(zmq.select([self.socket],[],[],0)[0])>0:
             #print 'got'
-            msg = self.socket.recv()
-            msg_type,data=cPickle.loads(msg)
-            if msg_type=='sim_pos':
+            topic,msg = self.socket.recv().split(' ',1)
+            data=cPickle.loads(msg)
+            if int(topic)==config.topic_simposdata:
                 self.sim_data.append(data)
-            if msg_type=='pos':
+                print '-*-','sim'
+            if int(topic)==config.topic_posdata:
                 self.data.append(data)
-            tx,ty,tz,r0,r1,r2=data
+                print '-*-','notsim'
+            #import pdb;pdb.set_trace()
+            #tx,ty,tz,r0,r1,r2=data
             self.draw_plot()
             data_history_len=10
             if len(self.data)>data_history_len:

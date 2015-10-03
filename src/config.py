@@ -35,3 +35,12 @@ else:
                 [  0  ,  fy ,  0],
                 [  0,   0  , 1.]])
 
+
+#pubsub topics
+topic_posdata=10001
+topic_simposdata=9999
+
+#pubsub ports
+sim_posport=5556
+posport=5555
+

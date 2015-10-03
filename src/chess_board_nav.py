@@ -41,10 +41,11 @@ def get_object_points():
     return objp
 
 
-port = "5556"
+port = config.posport
 context = zmq.Context()
-socket = context.socket(zmq.PAIR)
-socket.connect("tcp://localhost:%s" % port)
+socket = context.socket(zmq.PUB)
+#socket.connect("tcp://localhost:%s" % port)
+socket.bind("tcp://*:%s" % port)
 
 rvec, tvec = None,None
 
@@ -111,9 +112,10 @@ while 1:
             R,J=cv2.Rodrigues((rvec[0,0],rvec[1,0],rvec[2,0]))
             #import pdb;pdb.set_trace()
             T=(-np.mat(R).I*np.mat([[tvec[0,0],tvec[1,0],tvec[2,0]]]).T).A1.tolist()
-            print '---',T,R
+            #print '---',T,R
             if len(zmq.select([],[socket],[],0)[1])>0:
-                socket.send(cPickle.dumps(('pos',nav_data)))
+                #print '---,sending'
+                socket.send("%d %s"%((config.topic_posdata,cPickle.dumps(nav_data))))
     cv2.imshow('img',img)
     k=cv2.waitKey(30)
     if k==27:

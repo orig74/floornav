@@ -5,8 +5,9 @@ Created on Tue Sep 15 08:31:22 2015
 @author: root
 """
 
-import cv2,zmq
+import cv2,zmq,cPickle
 import numpy as np
+import config
 from numpy import cos,sin
 def create_chess_board(dim=(4,4),slot_size=80):
     img=np.zeros((slot_size*dim[0],slot_size*dim[1]),dtype='float32')
@@ -95,9 +96,8 @@ def rotate_img(img,alpha,beta,gamma,dx,dy,dz,f):
 
               0, 0,    1]).reshape((3,3))
     #np.set_printoptions(precision=4)
-    #import pdb;pdb.set_trace()
     #return cv2.warpPerspective(img,trans[:3,:3],img.shape[::-1],borderValue=0.5)
-    return cv2.warpPerspective(img,Center.I*Scale.I*np.mat(tr)*Scale*Center,img.shape[::-1],borderValue=0.1)
+    return R[:3,:3],cv2.warpPerspective(img,Center.I*Scale.I*np.mat(tr)*Scale*Center,img.shape[::-1],borderValue=0.1)
     #return cv2.warpPerspective(img,np.eye(3),img.shape[::-1],borderValue=0.5)
 
     
@@ -107,6 +107,11 @@ if __name__=='__main__':
     context = zmq.Context()
     socket = context.socket(zmq.PAIR)
     socket.bind("tcp://*:%s" % port)
+
+    pubsocket = context.socket(zmq.PUB)
+    pubsocket.bind("tcp://*:%s" % config.sim_posport)
+
+
 
     chess_img=create_chess_board()
     h,w=480,640
@@ -121,7 +126,16 @@ if __name__=='__main__':
     xx,yy, zz =0,0,-1.4
     ff=2
     while 1:
-        cam_img=rotate_img(img,pitch,roll,yaw, xx,yy, zz,ff)
+        R,cam_img=rotate_img(img,pitch,roll,yaw, xx,yy, zz,ff)
+        rvec,J=cv2.Rodrigues(R)
+        #import pdb;pdb.set_trace()
+        if len(zmq.select([],[pubsocket],[],0)[1])>0:
+                #print '---,sending'
+            rvec=rvec.flatten()
+            tosend=(xx,yy,zz,rvec[0],rvec[1],rvec[2])
+          #  print tosend
+            pubsocket.send("%d %s"%((config.topic_simposdata,cPickle.dumps(tosend))))
+
         #cam_img=img
         cv2.circle(cam_img,(img.shape[1]/2,img.shape[0]/2),3,(0.3,0,0))
         #import pdb;pdb.set_trace()
@@ -143,6 +157,6 @@ if __name__=='__main__':
         if k==ord('g'): yy-=.1
         if k==ord('y'): zz+=0.1
         if k==ord('h'): zz-=0.1
-        print '>>>',pitch,roll,yaw, xx,yy, zz
+        #print '>>>',pitch,roll,yaw, xx,yy, zz
             
         
