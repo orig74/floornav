@@ -152,7 +152,7 @@ class GraphFrame(wx.Frame):
         self.axes_xyz.plot3D(
                     xs,ys,zs, 
                     linewidth=1,
-                    color=(1, 0, 0))
+                    color=line_color)
 
     def draw_plot(self):
         self.axes_xyz.cla()
@@ -182,10 +182,10 @@ class GraphFrame(wx.Frame):
             data=cPickle.loads(msg)
             if int(topic)==config.topic_simposdata:
                 self.sim_data.append(data)
-                print '-*-','sim'
+                #print '-*-','sim'
             if int(topic)==config.topic_posdata:
                 self.data.append(data)
-                print '-*-','notsim'
+                #print '-*-','notsim'
             #import pdb;pdb.set_trace()
             #tx,ty,tz,r0,r1,r2=data
             self.draw_plot()

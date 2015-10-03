@@ -101,11 +101,11 @@ while 1:
                           0, 0,    1]).reshape((3,3))
         center_corners=(Scale*ToCenter*np.mat( map(lambda x:x+[1],aaa)).T).T
         corners_for_solve=center_corners[:,:2].A.reshape((-1,1,2))
-        #import pdb;pdb.set_trace()
         newcameramtx=config.cameramtx
             
         retval, rvec, tvec = cv2.solvePnP(obj_points_norm, 
                                           corners_for_solve, newcameramtx, np.zeros((5,1)))
+        #import pdb;pdb.set_trace()
         if retval:
             nav_data=(tvec[0,0],tvec[1,0],tvec[2,0],rvec[0,0],rvec[1,0],rvec[2,0])
             #print ('%.2f '*6)%(nav_data)
@@ -115,7 +115,8 @@ while 1:
             #print '---',T,R
             if len(zmq.select([],[socket],[],0)[1])>0:
                 #print '---,sending'
-                socket.send("%d %s"%((config.topic_posdata,cPickle.dumps(nav_data))))
+                tosend=(T[0],T[1],T[2],rvec[0,0],rvec[1,0],rvec[2,0])
+                socket.send("%d %s"%((config.topic_posdata,cPickle.dumps(tosend))))
     cv2.imshow('img',img)
     k=cv2.waitKey(30)
     if k==27:
