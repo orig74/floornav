@@ -12,6 +12,8 @@ after clonning the repository run:
 > cd scripts
 > ./run_chess_simulation.sh 
 
+![alt tag](https://raw.github.com/origanoni/floornav/master/images/camera_simulation.png)
+
 on the camera simulator window use the keys:
 a q -> pitch control
 w s -> roll control
