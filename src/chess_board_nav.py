@@ -89,9 +89,9 @@ while 1:
         cv2.drawChessboardCorners(img, dim, corners,ret)
         obj_points_norm=get_object_points()-(dim[0]//2,dim[1]//2,0)
         h,w=gray.shape
-        Scale=np.mat([  1.0/h*2, 0, 0, #scale only by h  not w!!
+        Scale=np.mat([  1.0/h*2.0, 0, 0, #scale only by h  not w!!
 
-                        0, 1.0/h*2, 0,#scale only by h !!
+                        0, 1.0/h*2.0, 0,#scale only by h !!
 
                         0, 0,    1]).reshape((3,3))
         ToCenter=np.mat([   1, 0, -w/2, 
