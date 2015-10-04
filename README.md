@@ -7,6 +7,7 @@ and these additional libraries:
 
 python-zmq,python-opencv,python-numpy,python-scipy
 
+#running simulation
 after clonning the repository run:
 > cd scripts
 > ./run_chess_simulation.sh 
