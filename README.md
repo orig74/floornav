@@ -12,6 +12,7 @@ after clonning the repository run:
 > cd scripts
 > ./run_chess_simulation.sh 
 
+#<h3>camera simulation window</h3>
 ![alt tag](https://raw.github.com/origanoni/floornav/master/images/camera_simulation.png)
 
 on the camera simulator window use the keys:
