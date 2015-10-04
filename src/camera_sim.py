@@ -144,7 +144,7 @@ if __name__=='__main__':
         #cam_img=img
         cv2.circle(cam_img,(img.shape[1]/2,img.shape[0]/2),3,(0.3,0,0))
         #import pdb;pdb.set_trace()
-        cv2.imshow('tets',cam_img)
+        cv2.imshow('camera simulator use keys qawsedrftg tocontrol',cam_img)
         if len(zmq.select([],[socket],[],0)[1])>0:
             socket.send(cam_img)
         k=cv2.waitKey(0)

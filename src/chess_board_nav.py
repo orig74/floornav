@@ -124,7 +124,7 @@ while 1:
                 print '---,sending',T[0],T[1],T[2]
                 tosend=(T[0],T[1],T[2],rvec[0,0],rvec[1,0],rvec[2,0])
                 socket.send("%d %s"%((config.topic_posdata,cPickle.dumps(tosend))))
-    cv2.imshow('img',img)
+    cv2.imshow('camera solver',img)
     k=cv2.waitKey(30)
     if k==27:
         break 

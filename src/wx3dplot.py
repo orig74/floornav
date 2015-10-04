@@ -18,60 +18,10 @@ import numpy as np
 import cv2
 import config
 
-
-
-class BoundControlBox(wx.Panel):
-    """ A static box with a couple of radio buttons and a text
-        box. Allows to switch between an automatic mode and a 
-        manual mode with an associated value.
-    """
-    def __init__(self, parent, ID, label, initval):
-        wx.Panel.__init__(self, parent, ID)
-        
-        self.value = initval
-        
-        box = wx.StaticBox(self, -1, label)
-        sizer = wx.StaticBoxSizer(box, wx.VERTICAL)
-        
-        self.radio_auto = wx.RadioButton(self, -1, 
-            label="Auto", style=wx.RB_GROUP)
-        self.radio_manual = wx.RadioButton(self, -1,
-            label="Manual")
-        self.manual_text = wx.TextCtrl(self, -1, 
-            size=(35,-1),
-            value=str(initval),
-            style=wx.TE_PROCESS_ENTER)
-        
-        self.Bind(wx.EVT_UPDATE_UI, self.on_update_manual_text, self.manual_text)
-        self.Bind(wx.EVT_TEXT_ENTER, self.on_text_enter, self.manual_text)
-        
-        manual_box = wx.BoxSizer(wx.HORIZONTAL)
-        manual_box.Add(self.radio_manual, flag=wx.ALIGN_CENTER_VERTICAL)
-        manual_box.Add(self.manual_text, flag=wx.ALIGN_CENTER_VERTICAL)
-        
-        sizer.Add(self.radio_auto, 0, wx.ALL, 10)
-        sizer.Add(manual_box, 0, wx.ALL, 10)
-        
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-    
-    def on_update_manual_text(self, event):
-        self.manual_text.Enable(self.radio_manual.GetValue())
-    
-    def on_text_enter(self, event):
-        self.value = self.manual_text.GetValue()
-    
-    def is_auto(self):
-        return self.radio_auto.GetValue()
-        
-    def manual_value(self):
-        return self.value
-
-
 class GraphFrame(wx.Frame):
     """ The main frame of the application
     """
-    title = 'Demo: dynamic matplotlib graph'
+    title = 'black L -> estimated camera, magenta L -> sim camera'
     
     def __init__(self):
         wx.Frame.__init__(self, None, -1, self.title)
@@ -188,7 +138,6 @@ class GraphFrame(wx.Frame):
                 #print '-*-','notsim'
             #import pdb;pdb.set_trace()
             #tx,ty,tz,r0,r1,r2=data
-            self.draw_plot()
             data_history_len=10
             if len(self.data)>data_history_len:
                 self.data=self.data[-data_history_len:]
