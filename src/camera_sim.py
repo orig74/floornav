@@ -17,7 +17,7 @@ def create_chess_board(dim=(4,4),slot_size=80):
                 img[i*slot_size:(i+1)*slot_size,j*slot_size:(j+1)*slot_size]=1
     return img
 #code from http://jepsonsblog.blogspot.co.il/2012/11/rotation-in-3d-using-opencvs.html
-def rotate_img(img,alpha,beta,gamma,dx,dy,dz,f):
+def rotate_img(img,alpha,beta,gamma,dx,dy,dz,cameramtx):
     alpha = (alpha - 0.)*np.pi/180.
     beta = (beta - 0.)*np.pi/180.
     gamma = (gamma - 0.)*np.pi/180.
@@ -70,16 +70,10 @@ def rotate_img(img,alpha,beta,gamma,dx,dy,dz,f):
         [1,1,0,1],
         [1,-1,0,1]]).T  
       
-    A3=np.mat([
-            f, 0 , -0,
-
-            0, f ,  0,
-
-            0, 0,   1
-    ]).reshape((3,3))  
+     
 
 
-    pr=A3*(R*T*tv)[:3,:]
+    pr=cameramtx*(R*T*tv)[:3,:]
     #normalizing
     pr=pr/pr[2,:].A1
     tr,res=cv2.findHomography(tv[:2,:].T.A.astype('float32'),pr[:2,:].T.A.astype('float32'))
@@ -107,26 +101,36 @@ if __name__=='__main__':
     context = zmq.Context()
     socket = context.socket(zmq.PAIR)
     socket.bind("tcp://*:%s" % port)
-
     pubsocket = context.socket(zmq.PUB)
     pubsocket.bind("tcp://*:%s" % config.sim_posport)
 
 
+    pitch=0
+    roll=0
+    yaw=0
+    xx,yy, zz =0,0,8.0
 
-    chess_img=create_chess_board()
+
+    cameramtx=np.mat(config.cameramtx)
+    dim=(config.dim[0]+1,config.dim[0]+1)
     h,w=480,640
+
+    ##get scale of chessboard
+    vscale=(cameramtx*np.mat((1,1,zz)).T).A1
+    #import pdb;pdb.set_trace()
+    vscale=vscale/vscale[2]
+    sy=int(vscale[1]*h)
+    
+
+    chess_img=create_chess_board(dim=dim,slot_size=80)
     cw,ch=chess_img.shape
     img=np.ones((h,w),dtype=chess_img.dtype)*0.1
     #img[w/2-cw/2:w/2+cw/2,h/2-ch/2:h/2+ch/2]=chess_img
     img[h/2-ch/2:h/2+ch/2,w/2-cw/2:w/2+cw/2]=chess_img
 
-    pitch=0
-    roll=0
-    yaw=0
-    xx,yy, zz =0,0,-1.4
-    ff=2
+
     while 1:
-        R,cam_img=rotate_img(img,pitch,roll,yaw, xx,yy, zz,ff)
+        R,cam_img=rotate_img(img,pitch,roll,yaw, xx,yy, zz,cameramtx)
         rvec,J=cv2.Rodrigues(R)
         #import pdb;pdb.set_trace()
         if len(zmq.select([],[pubsocket],[],0)[1])>0:

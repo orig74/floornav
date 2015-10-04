@@ -111,7 +111,7 @@ while 1:
             #print ('%.2f '*6)%(nav_data)
             R,J=cv2.Rodrigues((rvec[0,0],rvec[1,0],rvec[2,0]))
             #import pdb;pdb.set_trace()
-            T=(-np.mat(R).I*np.mat([[tvec[0,0],tvec[1,0],tvec[2,0]]]).T).A1.tolist()
+            T=(np.mat(R).I*np.mat([[tvec[0,0],tvec[1,0],tvec[2,0]]]).T).A1.tolist()
             #print '---',T,R
             if len(zmq.select([],[socket],[],0)[1])>0:
                 #print '---,sending'
