@@ -88,6 +88,13 @@ while 1:
     
         cv2.drawChessboardCorners(img, dim, corners,ret)
         obj_points_norm=get_object_points()-(dim[0]//2,dim[1]//2,0)
+        
+        
+        #todo:  why need to normalize it by dim[0] ?? is it a bug?        
+        obj_points_norm/=dim[0]
+
+
+
         h,w=gray.shape
         Scale=np.mat([  1.0/h*2.0, 0, 0, #scale only by h  not w!!
 
@@ -114,7 +121,7 @@ while 1:
             T=(np.mat(R).I*np.mat([[tvec[0,0],tvec[1,0],tvec[2,0]]]).T).A1.tolist()
             #print '---',T,R
             if len(zmq.select([],[socket],[],0)[1])>0:
-                #print '---,sending'
+                print '---,sending',T[0],T[1],T[2]
                 tosend=(T[0],T[1],T[2],rvec[0,0],rvec[1,0],rvec[2,0])
                 socket.send("%d %s"%((config.topic_posdata,cPickle.dumps(tosend))))
     cv2.imshow('img',img)

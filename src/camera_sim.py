@@ -116,7 +116,7 @@ if __name__=='__main__':
     h,w=480,640
 
     ##get scale of chessboard
-    vscale=(cameramtx*np.mat((1,1,zz)).T).A1
+    vscale=(cameramtx*np.mat((1.0,1.0,zz)).T).A1
     #import pdb;pdb.set_trace()
     vscale=vscale/vscale[2]
     sy=int(vscale[1]*h)
@@ -138,6 +138,7 @@ if __name__=='__main__':
             rvec=rvec.flatten()
             tosend=(xx,yy,zz,rvec[0],rvec[1],rvec[2])
           #  print tosend
+            print 'sim',xx,yy,zz
             pubsocket.send("%d %s"%((config.topic_simposdata,cPickle.dumps(tosend))))
 
         #cam_img=img
